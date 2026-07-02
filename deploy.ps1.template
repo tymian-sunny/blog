@@ -1,0 +1,7 @@
+# deploy.ps1
+
+# 构建VuePress
+npm run docs:build
+
+# 部署到服务器
+scp -r -P 端口 .\docs\.vuepress\dist\* user@xxx.xxx.xxx.xxx:/opt/blog-tymian/

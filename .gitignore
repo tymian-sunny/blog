@@ -1,0 +1,8 @@
+docs/post/**
+docs/.vuepress/.temp
+docs/.vuepress/.cache
+docs/.vuepress/dist
+
+node_modules/
+
+deploy.ps1
