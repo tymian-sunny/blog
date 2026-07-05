@@ -9,6 +9,12 @@ export default defineUserConfig({
   title: 'Tymian的博客',
   description: '分享来自各处的见闻',
 
+  extendsPageData: (page) => {
+    return {
+      filePathRelative: page.filePathRelative,
+    }
+  },
+
   theme: defaultTheme({
     logo: 'https://vuejs.press/images/hero.png',
 

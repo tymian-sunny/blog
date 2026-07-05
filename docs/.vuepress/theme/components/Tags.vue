@@ -24,10 +24,22 @@ const tags = computed(() => {
 </template>
 
 <style scoped>
-.tags-fixed {
-  max-width: 740px;
+.tags-fixed[data-v-64a5a6d5] {
+  max-width: var(--content-width); /* 而不是写死 740px */
   margin: 0 auto 20px;
-  padding: 0 24px;
+  padding: 0 2.5rem; /* 对应桌面端 2.5rem */
+}
+
+@media (max-width: 959px) {
+  .tags-fixed[data-v-64a5a6d5] {
+    padding: 0 2rem;
+  }
+}
+
+@media (max-width: 419px) {
+  .tags-fixed[data-v-64a5a6d5] {
+    padding: 0 1.5rem;
+  }
 }
 
 .tag {
@@ -44,7 +56,7 @@ const tags = computed(() => {
 }
 
 .tag:hover {
-  color: var(--vp-c-bg);
+  color: var(--vp-c-accent-bg);
   background-color: var(--vp-c-brand);
   text-decoration: none;
 }
