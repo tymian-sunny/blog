@@ -13,13 +13,13 @@ const tags = computed(() => {
 <template>
   <div v-if="tags.length" class="tags-fixed">
     <a
-      v-for="tag in tags"
-      :key="tag"
-      class="tag"
-      :href="`/tag/${tag}/`"
-    >
-      # {{ tag }}
-    </a>
+  v-for="tag in tags"
+  :key="tag"
+  class="tag"
+  :href="`/tag/${tag.toLowerCase()}/`"
+>
+  # {{ tag }}
+</a>
   </div>
 </template>
 
