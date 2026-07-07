@@ -42,7 +42,7 @@ export default defineUserConfig({
 
   plugins: [
     blogPlugin({
-      // 修改 filter 函数，排除特定文件夹并只处理 tags 包含 public 的文章
+      // 修改 filter 函数，排除特定文件夹并只处理 frontmatter.public === true 的文章
       filter: ({ filePathRelative, frontmatter }) => {
         // 硬编码要排除的文件夹
         const excludedFolders = ['.obsidian', '.trash', '模板'];
@@ -51,11 +51,8 @@ export default defineUserConfig({
           filePathRelative.startsWith('posts/') &&
           // 排除特定文件夹
           !excludedFolders.some(folder => filePathRelative.startsWith(`posts/${folder}/`)) &&
-          // 只包含 public 标签的文章
-          (
-            Array.isArray(frontmatter?.tag) && frontmatter.tag.includes('public') ||
-            Array.isArray(frontmatter?.tags) && frontmatter.tags.includes('public')
-          )
+          // 只包含 frontmatter.public === true 的文章
+          frontmatter?.public === true
         );
       },
       // 文章信息（保持不变）
@@ -155,7 +152,18 @@ export default defineUserConfig({
       hotReload: true,
     }),
     slimsearchPlugin({
-      // 选项
+      // 只将 `frontmatter.public === true` 且位于 posts/ 下的文章加入搜索索引
+      filter: (page) => {
+        // 如果显式设置了 frontmatter.search = false，则排除
+        if (page?.frontmatter?.search === false) return false
+
+        const fm = page?.frontmatter || {}
+
+        const filePathRelative = page?.filePathRelative
+        const inPosts = typeof filePathRelative === 'string' && filePathRelative.startsWith('posts/')
+
+        return inPosts && fm.public === true
+      },
     }),
   ],
 

@@ -27,7 +27,7 @@ const list = [
 ]
 
 const go = () => {
-  router.push('/posts/')
+  router.push('/article/')
 }
 </script>
 
