@@ -24,23 +24,6 @@ const tags = computed(() => {
 </template>
 
 <style scoped>
-.tags-fixed[data-v-64a5a6d5] {
-  max-width: var(--content-width); /* 而不是写死 740px */
-  margin: 0 auto 20px;
-  padding: 0 2.5rem; /* 对应桌面端 2.5rem */
-}
-
-@media (max-width: 959px) {
-  .tags-fixed[data-v-64a5a6d5] {
-    padding: 0 2rem;
-  }
-}
-
-@media (max-width: 419px) {
-  .tags-fixed[data-v-64a5a6d5] {
-    padding: 0 1.5rem;
-  }
-}
 
 .tag {
   display: inline-block;
@@ -49,7 +32,7 @@ const tags = computed(() => {
   background-color: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-brand);
   border-radius: 4px;
-  padding: 2px 10px;
+  padding: 2px 10px 2px 0px;
   margin: 4px 6px 4px 0;
   text-decoration: none;
   transition: all 0.2s ease;
