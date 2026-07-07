@@ -2,6 +2,7 @@ import { blogPlugin } from '@vuepress/plugin-blog'
 import { defaultTheme } from '@vuepress/theme-default'
 import { defineUserConfig } from 'vuepress'
 import { viteBundler } from '@vuepress/bundler-vite'
+import { slimsearchPlugin } from '@vuepress/plugin-slimsearch'
 
 export default defineUserConfig({
   lang: 'en-US',
@@ -152,6 +153,9 @@ export default defineUserConfig({
       ],
 
       hotReload: true,
+    }),
+    slimsearchPlugin({
+      // 选项
     }),
   ],
 
