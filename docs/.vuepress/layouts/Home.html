@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陈屿 · 全栈冒险日志</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EAF4FF;
+    --bg-panel:#FFFFFF;
+    --ink:#1B1B2F;
+    --pink:#FF3D7F;
+    --pink-shadow:#C81856;
+    --blue:#2FA8FF;
+    --blue-shadow:#0E74C4;
+    --yellow:#FFD93D;
+    --yellow-shadow:#EAAE00;
+    --green:#3DDC97;
+    --green-shadow:#1FAE72;
+    --purple:#8C6BFF;
+    --skin:#FFE1C4;
+    --skin-shadow:#F4C79E;
+    --white:#FFFFFF;
+
+    --font-display:'Zen Maru Gothic', sans-serif;
+    --font-en:'Baloo 2', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+
+    --line:3px;
+    --line-thick:4px;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-display);
+    font-weight:400;
+    line-height:1.85;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--ink);color:var(--yellow);}
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* comic outline text util */
+  .outline-text{
+    color:var(--white);
+    -webkit-text-stroke:6px var(--ink);
+    paint-order:stroke fill;
+    text-shadow:none;
+  }
+
+  .halftone{background-image:radial-gradient(var(--ink) 1.4px, transparent 1.4px);background-size:9px 9px;}
+
+  /* ---------- NAV ---------- */
+  header.nav{position:sticky;top:0;z-index:200;background:var(--bg);border-bottom:var(--line) solid var(--ink);}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;max-width:1180px;margin:0 auto;gap:12px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-en);font-weight:800;font-size:19px;}
+  .logo .badge{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--pink);border:var(--line) solid var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--white);font-family:var(--font-display);font-weight:900;font-size:15px;
+    box-shadow:2px 2px 0 var(--ink);
+    flex-shrink:0;
+  }
+  nav.links{display:flex;gap:8px;font-family:var(--font-en);font-size:13px;font-weight:700;}
+  nav.links a{
+    padding:8px 14px;border-radius:999px;border:2.5px solid transparent;
+    transition:all .15s ease;
+  }
+  nav.links a:hover{border-color:var(--ink);background:var(--white);box-shadow:2px 2px 0 var(--ink);transform:translate(-1px,-1px);}
+  .btn-ghub{
+    font-family:var(--font-en);font-weight:800;font-size:12.5px;
+    background:var(--ink);color:var(--bg);
+    border:var(--line) solid var(--ink);border-radius:999px;
+    padding:9px 18px;box-shadow:3px 3px 0 var(--pink);
+    transition:transform .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
+  }
+  .btn-ghub:hover{transform:translate(2px,2px);box-shadow:0 0 0 var(--pink);}
+  .nav-toggle{display:none;}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;padding:70px 0 60px;overflow:hidden;}
+  .speedlines{position:absolute;inset:0;z-index:0;opacity:.5;}
+  .hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr 0.95fr;gap:20px;align-items:center;}
+
+  .eyebrow-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--font-en);font-weight:700;font-size:13px;letter-spacing:.03em;
+    background:var(--yellow);border:2.5px solid var(--ink);border-radius:999px;
+    padding:6px 14px 6px 10px;box-shadow:2px 2px 0 var(--ink);
+  }
+  .eyebrow-tag .dot{width:8px;height:8px;background:var(--pink);border-radius:50%;border:1.5px solid var(--ink);}
+
+  .title-panel{position:relative;margin:22px 0 22px;}
+  .title-panel .plate{
+    position:absolute;top:-14px;left:-18px;
+    width:calc(100% + 60px);height:calc(100% + 32px);
+    background:var(--pink);border:var(--line-thick) solid var(--ink);
+    transform:rotate(-2.5deg);
+    box-shadow:6px 6px 0 var(--blue-shadow);
+    z-index:-1;
+  }
+  .hero-headline{
+    font-family:var(--font-display);font-weight:900;
+    font-size:clamp(32px,5.4vw,56px);line-height:1.15;
+    padding:10px 6px;
+  }
+  .hero-headline .en{
+    display:block;font-family:var(--font-en);font-weight:800;
+    font-size:.36em;color:var(--white);letter-spacing:.03em;margin-top:10px;
+    -webkit-text-stroke:0;
+  }
+
+  .speech-box{
+    position:relative;background:var(--white);border:var(--line) solid var(--ink);
+    border-radius:18px;padding:16px 20px;max-width:48ch;
+    font-size:14.5px;font-weight:500;color:#3a3a3a;
+    box-shadow:4px 4px 0 var(--ink);
+    margin-bottom:30px;
+  }
+  .speech-box::after{content:"";position:absolute;left:34px;bottom:-14px;width:0;height:0;border:12px solid transparent;border-top-color:var(--ink);}
+  .speech-box::before{content:"";position:absolute;left:37px;bottom:-9px;width:0;height:0;border:9px solid transparent;border-top-color:var(--white);z-index:1;}
+
+  .hero-cta{display:flex;gap:16px;flex-wrap:wrap;}
+  .btn{
+    font-family:var(--font-en);font-weight:800;font-size:14px;
+    padding:14px 26px;display:inline-flex;align-items:center;gap:8px;
+    border-radius:999px;border:var(--line) solid var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn-solid{background:var(--blue);color:var(--white);box-shadow:4px 4px 0 var(--ink);}
+  .btn-solid:hover{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink);}
+  .btn-outline{background:var(--white);color:var(--ink);box-shadow:4px 4px 0 var(--ink);}
+  .btn-outline:hover{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink);}
+
+  .hero-art{position:relative;display:flex;justify-content:center;align-items:center;min-height:380px;}
+  .burst{
+    position:absolute;width:420px;height:420px;
+    background:
+      repeating-conic-gradient(from 0deg, var(--yellow) 0deg 4deg, transparent 4deg 12deg);
+    border-radius:50%;
+    opacity:.55;
+    animation:spin 60s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .avatar-frame{
+    position:relative;width:290px;height:290px;
+    opacity:0;animation:popIn .6s cubic-bezier(.34,1.56,.64,1) .2s forwards;
+  }
+  @keyframes popIn{from{opacity:0;transform:scale(.7) rotate(-6deg);}to{opacity:1;transform:scale(1) rotate(0);}}
+
+  .float-badge{
+    position:absolute;
+    background:var(--white);border:var(--line) solid var(--ink);border-radius:14px;
+    padding:8px 12px;font-family:var(--font-mono);font-weight:800;font-size:12px;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .fb-1{top:8px;left:-6px;background:var(--yellow);animation:bob 3s ease-in-out infinite;}
+  .fb-2{bottom:26px;right:-14px;background:var(--green);animation:bob 3.4s ease-in-out infinite .3s;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:90px 0;position:relative;}
+  .section-band{
+    border-top:var(--line) solid var(--ink);
+    border-bottom:var(--line) solid var(--ink);
+    background:var(--bg-panel);
+  }
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:46px;flex-wrap:wrap;}
+  .section-title{
+    display:inline-flex;flex-direction:column;
+    font-family:var(--font-display);font-weight:900;font-size:clamp(24px,3.6vw,36px);
+  }
+  .section-title .en{
+    font-family:var(--font-en);font-weight:700;font-size:.36em;color:var(--pink);
+    letter-spacing:.06em;text-transform:uppercase;margin-top:6px;
+  }
+  .view-all{
+    font-family:var(--font-en);font-weight:700;font-size:13px;
+    border:2.5px solid var(--ink);border-radius:999px;padding:8px 16px;
+    box-shadow:3px 3px 0 var(--ink);transition:all .15s ease;
+  }
+  .view-all:hover{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink);}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .55s ease,transform .55s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ---------- ABOUT / STATUS ---------- */
+  .about-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:54px;}
+  .manifesto{font-size:16px;font-weight:500;color:#333;}
+  .manifesto strong{background:var(--yellow);padding:0 4px;border-radius:4px;box-decoration-break:clone;}
+  .tag-row{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;}
+  .tag-chip{
+    font-family:var(--font-mono);font-weight:700;font-size:12.5px;
+    padding:8px 14px;border-radius:999px;border:2.5px solid var(--ink);
+    background:var(--white);box-shadow:2px 2px 0 var(--ink);
+  }
+
+  .status-card{border:var(--line) solid var(--ink);border-radius:20px;background:var(--bg);padding:26px 26px 8px;box-shadow:5px 5px 0 var(--ink);}
+  .stat-row{margin-bottom:22px;}
+  .stat-label{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-en);font-weight:700;font-size:13px;margin-bottom:8px;}
+  .stat-label .lv{font-family:var(--font-mono);background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:6px;font-size:11.5px;}
+  .stat-sub{font-family:var(--font-mono);font-size:10.5px;color:#666;display:block;margin-top:2px;font-weight:500;}
+  .gauge{
+    height:20px;border-radius:999px;border:2.5px solid var(--ink);
+    background:var(--white);overflow:hidden;position:relative;
+  }
+  .gauge-fill{
+    height:100%;width:0%;
+    background-image:repeating-linear-gradient(90deg, currentColor 0 22px, transparent 22px 24px);
+    background-color:currentColor;
+    transition:width 1.1s cubic-bezier(.2,.8,.2,1);
+    position:relative;
+  }
+  .gauge-fill::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 20px, rgba(27,27,47,.35) 20px 23px);}
+  .gauge.in .gauge-fill{width:var(--w);}
+  .g-pink{color:var(--pink);} .g-blue{color:var(--blue);} .g-green{color:var(--green);} .g-yellow{color:var(--yellow-shadow);}
+
+  /* ---------- PROJECTS (quest cards) ---------- */
+  .card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:30px;}
+  .card{
+    position:relative;background:var(--white);
+    border:var(--line) solid var(--ink);border-radius:18px;
+    padding:26px;box-shadow:6px 6px 0 var(--ink);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .card:nth-child(odd){transform:rotate(-1deg);}
+  .card:nth-child(even){transform:rotate(1deg);}
+  .card:hover{transform:rotate(0) translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink);}
+  .card-burst{
+    position:absolute;top:-14px;right:-14px;width:70px;height:70px;
+    background-image:radial-gradient(var(--ink) 1.6px, transparent 1.6px);
+    background-size:8px 8px;border-radius:50%;opacity:.4;pointer-events:none;
+  }
+  .quest-tag{
+    display:inline-block;font-family:var(--font-mono);font-weight:800;font-size:10.5px;
+    padding:3px 10px;border-radius:999px;border:2px solid var(--ink);letter-spacing:.03em;
+  }
+  .quest-main{background:var(--pink);color:var(--white);}
+  .quest-side{background:var(--green);color:var(--ink);}
+  .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .card-stars{font-size:13px;color:var(--yellow-shadow);letter-spacing:1px;}
+  .card h3{font-family:var(--font-display);font-weight:900;font-size:20px;margin:6px 0 10px;}
+  .card p{font-size:13.5px;font-weight:500;color:#444;margin-bottom:16px;}
+  .card-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+  .card-tags span{font-family:var(--font-mono);font-size:10.5px;font-weight:700;background:var(--ink);color:var(--bg);padding:3px 9px;border-radius:999px;}
+  .card-link{font-family:var(--font-en);font-weight:800;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;border-bottom:3px solid var(--ink);padding-bottom:1px;}
+  .card:hover .card-link{color:var(--pink);border-color:var(--pink);}
+
+  /* ---------- BLOG (adventure log) ---------- */
+  .log-list{display:flex;flex-direction:column;gap:16px;}
+  .log-row{
+    display:grid;grid-template-columns:110px 1fr auto;gap:20px;align-items:center;
+    background:var(--white);border:2.5px solid var(--ink);border-radius:14px;
+    padding:18px 20px;transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .log-row:hover{transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--ink);}
+  .log-id{font-family:var(--font-mono);font-weight:800;font-size:11.5px;color:var(--blue-shadow);}
+  .log-id span{display:block;font-family:var(--font-mono);font-weight:500;font-size:10.5px;color:#888;margin-top:2px;}
+  .log-main h3{font-family:var(--font-display);font-weight:700;font-size:16.5px;margin-bottom:5px;}
+  .log-main p{font-size:12.5px;font-weight:500;color:#555;}
+  .log-meta{text-align:right;font-family:var(--font-mono);font-size:11px;color:#666;}
+  .log-meta .stars{display:block;color:var(--yellow-shadow);font-size:13px;margin-bottom:4px;letter-spacing:1px;}
+
+  /* ---------- FOOTER ---------- */
+  footer{padding:80px 0 30px;background:var(--ink);color:var(--bg);position:relative;overflow:hidden;}
+  footer::before{
+    content:"STAGE CLEAR";position:absolute;top:-6px;left:0;right:0;
+    text-align:center;font-family:var(--font-en);font-weight:800;
+    font-size:14vw;color:rgba(255,255,255,.04);letter-spacing:.05em;white-space:nowrap;pointer-events:none;
+  }
+  .footer-inner{position:relative;z-index:1;}
+  .footer-title{font-family:var(--font-display);font-weight:900;font-size:clamp(26px,4.4vw,46px);max-width:16ch;margin-bottom:10px;}
+  .footer-sub{font-family:var(--font-en);font-weight:700;color:var(--yellow);font-size:14px;margin-bottom:40px;}
+  .pad-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px;}
+  .pad-btn{
+    width:70px;height:70px;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:var(--line) solid var(--bg);font-family:var(--font-mono);font-weight:800;font-size:11px;
+    transition:transform .15s ease;
+  }
+  .pad-btn span{font-size:16px;}
+  .pad-btn:hover{transform:translateY(-6px) rotate(-6deg);}
+  .pad-a{background:var(--pink);color:var(--white);}
+  .pad-b{background:var(--blue);color:var(--white);}
+  .pad-x{background:var(--yellow);color:var(--ink);}
+  .pad-y{background:var(--green);color:var(--ink);}
+  .foot-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:24px;border-top:1.5px solid rgba(234,244,255,.2);font-family:var(--font-mono);font-size:11.5px;color:rgba(234,244,255,.6);}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-art{order:-1;margin-bottom:10px;min-height:300px;}
+    .avatar-frame{width:230px;height:230px;}
+    .burst{width:320px;height:320px;}
+    .about-grid{grid-template-columns:1fr;}
+    .card-grid{grid-template-columns:1fr;}
+    .card:nth-child(odd),.card:nth-child(even){transform:rotate(0);}
+    nav.links{display:none;}
+    .nav-toggle{display:flex;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:8px;}
+    .nav-toggle span{width:22px;height:3px;background:var(--ink);border-radius:2px;}
+    .mobile-links{display:none;flex-direction:column;border-top:var(--line) solid var(--ink);font-family:var(--font-en);font-weight:700;font-size:14px;background:var(--bg-panel);}
+    .mobile-links a{padding:16px 28px;border-bottom:1.5px solid rgba(27,27,47,.15);}
+    .log-row{grid-template-columns:1fr;text-align:left;gap:6px;}
+    .log-meta{text-align:left;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner" id="navInner">
+    <a href="#top" class="logo"><span class="badge">屿</span>陈屿</a>
+    <nav class="links">
+      <a href="#top">首页</a>
+      <a href="#status">属性</a>
+      <a href="#quests">任务卡</a>
+      <a href="#log">冒险日志</a>
+      <a href="#contact">联系</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a class="btn-ghub" href="https://github.com" target="_blank" rel="noopener">GITHUB ↗</a>
+      <button class="nav-toggle" id="navToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-links" id="mobileLinks">
+    <a href="#top">首页</a>
+    <a href="#status">属性</a>
+    <a href="#quests">任务卡</a>
+    <a href="#log">冒险日志</a>
+    <a href="#contact">联系</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <svg class="speedlines" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g stroke="#1B1B2F" stroke-width="2">
+        <line x1="900" y1="350" x2="1220" y2="60"/>
+        <line x1="900" y1="350" x2="1240" y2="180"/>
+        <line x1="900" y1="350" x2="1250" y2="320"/>
+        <line x1="900" y1="350" x2="1240" y2="470"/>
+        <line x1="900" y1="350" x2="1200" y2="620"/>
+        <line x1="900" y1="350" x2="1050" y2="660"/>
+        <line x1="900" y1="350" x2="880" y2="680"/>
+        <line x1="900" y1="350" x2="700" y2="640"/>
+        <line x1="900" y1="350" x2="620" y2="520"/>
+        <line x1="900" y1="350" x2="600" y2="380"/>
+        <line x1="900" y1="350" x2="620" y2="200"/>
+        <line x1="900" y1="350" x2="700" y2="60"/>
+      </g>
+    </svg>
+
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow-tag"><span class="dot"></span>SOFTWARE ENGINEER · 全栈开发者</span>
+
+        <div class="title-panel">
+          <div class="plate" aria-hidden="true"></div>
+          <h1 class="hero-headline outline-text">
+            全栈冒险<br>进行中
+            <span class="en">LEVEL UP YOUR STACK</span>
+          </h1>
+        </div>
+
+        <div class="speech-box">
+          陈屿 / 全栈工程师 —— 白天写代码，晚上刷复古游戏，偶尔两者一起干 (｡•̀ᴗ-)✧
+        </div>
+
+        <div class="hero-cta">
+          <a href="#quests" class="btn btn-solid">查看任务卡 →</a>
+          <a href="#log" class="btn btn-outline">阅读冒险日志</a>
+        </div>
+      </div>
+
+      <div class="hero-art">
+        <div class="burst" aria-hidden="true"></div>
+
+        <div class="float-badge fb-1">LV.99<br>FULL STACK</div>
+        <div class="float-badge fb-2">HP ████░ 88%</div>
+
+        <div class="avatar-frame">
+          <svg viewBox="0 0 240 260" aria-hidden="true">
+            <ellipse cx="120" cy="236" rx="96" ry="20" fill="#1B1B2F" opacity=".12"/>
+
+            <!-- hair back -->
+            <path d="M46 150 C40 90 70 34 120 34 C170 34 200 90 194 150 L188 190 L166 150 L162 200 L140 158 L134 210 L108 158 L100 210 L76 158 L70 196 L52 150 Z" fill="var(--pink)" stroke="#1B1B2F" stroke-width="4" stroke-linejoin="round"/>
+            <!-- hair shadow -->
+            <path d="M60 150 C56 108 78 66 120 66 C160 66 184 108 180 150 C160 130 80 130 60 150 Z" fill="var(--pink-shadow)"/>
+
+            <!-- neck -->
+            <rect x="104" y="150" width="32" height="34" fill="var(--skin)" stroke="#1B1B2F" stroke-width="4"/>
+            <path d="M104 168 h32 v10 h-32z" fill="var(--skin-shadow)"/>
+
+            <!-- face -->
+            <circle cx="120" cy="126" r="58" fill="var(--skin)" stroke="#1B1B2F" stroke-width="4"/>
+            <path d="M62 126 a58 58 0 0 0 30 50 C78 152 66 140 64 126 Z" fill="var(--skin-shadow)"/>
+
+            <!-- collar / shirt -->
+            <path d="M60 260 C60 210 86 190 120 190 C154 190 180 210 180 260 Z" fill="var(--blue)" stroke="#1B1B2F" stroke-width="4"/>
+            <path d="M60 260 C60 224 78 206 96 198 L120 230 L144 198 C162 206 180 224 180 260 Z" fill="var(--white)"/>
+            <path d="M108 198 L120 230 L132 198 L120 210 Z" fill="var(--blue-shadow)"/>
+
+            <!-- ears -->
+            <circle cx="60" cy="128" r="10" fill="var(--skin)" stroke="#1B1B2F" stroke-width="3.5"/>
+            <circle cx="180" cy="128" r="10" fill="var(--skin)" stroke="#1B1B2F" stroke-width="3.5"/>
+
+            <!-- front hair -->
+            <path d="M58 118 C50 70 78 30 120 30 C162 30 190 70 182 118 C178 92 160 62 120 62 C80 62 62 92 58 118 Z" fill="var(--pink)" stroke="#1B1B2F" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M96 40 L104 84 M120 34 L122 88 M144 40 L136 84" stroke="var(--pink-shadow)" stroke-width="5" stroke-linecap="round"/>
+            <ellipse cx="150" cy="46" rx="10" ry="16" fill="var(--white)" opacity=".55" transform="rotate(18 150 46)"/>
+
+            <!-- brows -->
+            <path d="M84 112 q14 -8 26 -1" fill="none" stroke="#1B1B2F" stroke-width="4" stroke-linecap="round"/>
+            <path d="M130 111 q14 -7 26 1" fill="none" stroke="#1B1B2F" stroke-width="4" stroke-linecap="round"/>
+
+            <!-- eyes -->
+            <path d="M82 128 q14 -18 30 0 q-14 16 -30 0 Z" fill="var(--white)" stroke="#1B1B2F" stroke-width="3.5"/>
+            <path d="M128 128 q14 -18 30 0 q-14 16 -30 0 Z" fill="var(--white)" stroke="#1B1B2F" stroke-width="3.5"/>
+            <circle cx="99" cy="129" r="8" fill="var(--blue)"/>
+            <circle cx="145" cy="129" r="8" fill="var(--blue)"/>
+            <circle cx="99" cy="129" r="4" fill="#1B1B2F"/>
+            <circle cx="145" cy="129" r="4" fill="#1B1B2F"/>
+            <circle cx="96" cy="126" r="2" fill="var(--white)"/>
+            <circle cx="142" cy="126" r="2" fill="var(--white)"/>
+
+            <!-- blush -->
+            <ellipse cx="84" cy="146" rx="9" ry="5.5" fill="var(--pink)" opacity=".55"/>
+            <ellipse cx="156" cy="146" rx="9" ry="5.5" fill="var(--pink)" opacity=".55"/>
+
+            <!-- mouth -->
+            <path d="M108 152 q12 8 24 0" fill="none" stroke="#1B1B2F" stroke-width="3.5" stroke-linecap="round"/>
+
+            <!-- hair clip: code bracket -->
+            <g transform="translate(168,74) rotate(18)">
+              <rect x="-16" y="-11" width="32" height="22" rx="6" fill="var(--yellow)" stroke="#1B1B2F" stroke-width="3"/>
+              <text x="0" y="6" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="13" font-weight="800" fill="#1B1B2F">&lt;/&gt;</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="status" class="section-band">
+    <div class="wrap about-grid">
+      <div class="reveal">
+        <h2 class="section-title">关于我 <span class="en">PLAYER PROFILE</span></h2>
+        <p class="manifesto" style="margin-top:20px;">
+          我是陈屿，一名全栈工程师，日常在 <strong>React</strong> 和 <strong>Go</strong> 之间横跳，
+          偶尔潜入 K8s 集群里救火。相信好的系统应该像好的分镜一样，结构清晰、一眼看懂发生了什么。
+          业余时间写文章、画点赛璐璐风插画，把技术讲成人话。
+        </p>
+        <div class="tag-row">
+          <span class="tag-chip">☕ 三杯起送</span>
+          <span class="tag-chip">🐈 猫奴</span>
+          <span class="tag-chip">🎮 复古主机收藏</span>
+          <span class="tag-chip">📷 胶片摄影</span>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h2 class="section-title">角色属性 <span class="en">CHARACTER STATUS</span></h2>
+        <div class="status-card" style="margin-top:20px;">
+          <div class="stat-row">
+            <div class="stat-label">前端 FRONTEND <span class="lv">LV. 92</span></div>
+            <div class="gauge" style="--w:92%;"><div class="gauge-fill g-pink"></div></div>
+            <span class="stat-sub">React · Vue · TypeScript</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">后端 BACKEND <span class="lv">LV. 88</span></div>
+            <div class="gauge" style="--w:88%;"><div class="gauge-fill g-blue"></div></div>
+            <span class="stat-sub">Node.js · Go · Java</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">基础设施 INFRA <span class="lv">LV. 80</span></div>
+            <div class="gauge" style="--w:80%;"><div class="gauge-fill g-green"></div></div>
+            <span class="stat-sub">PostgreSQL · Redis · Docker · K8s</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">写作与沟通 SOFT SKILL <span class="lv">LV. 75</span></div>
+            <div class="gauge" style="--w:75%;"><div class="gauge-fill g-yellow"></div></div>
+            <span class="stat-sub">技术写作 · 分享 · 复盘</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="quests">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 class="section-title">任务卡 <span class="en">QUEST CARDS</span></h2>
+        <a href="https://github.com" target="_blank" rel="noopener" class="view-all">全部项目 ↗</a>
+      </div>
+      <div class="card-grid">
+
+        <article class="card reveal">
+          <div class="card-burst" aria-hidden="true"></div>
+          <div class="card-top">
+            <span class="quest-tag quest-main">主线任务</span>
+            <span class="card-stars">★★★★☆</span>
+          </div>
+          <h3>云端笔记本</h3>
+          <p>支持离线优先与多端实时同步的协作笔记应用，基于 CRDT 解决冲突合并问题。</p>
+          <div class="card-tags"><span>React</span><span>CRDT</span><span>Go</span></div>
+          <a href="#" class="card-link">查看详情 →</a>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-burst" aria-hidden="true"></div>
+          <div class="card-top">
+            <span class="quest-tag quest-side">支线任务</span>
+            <span class="card-stars">★★★☆☆</span>
+          </div>
+          <h3>像素质检台</h3>
+          <p>面向像素画师的图片规范检查工具，命令行 + Web 双界面，一键找出色板越界。</p>
+          <div class="card-tags"><span>Rust</span><span>WASM</span><span>CLI</span></div>
+          <a href="#" class="card-link">查看详情 →</a>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-burst" aria-hidden="true"></div>
+          <div class="card-top">
+            <span class="quest-tag quest-main">主线任务</span>
+            <span class="card-stars">★★★★☆</span>
+          </div>
+          <h3>小径</h3>
+          <p>个人自用的服务器监控面板，实时展示 K8s 集群状态，凌晨报警从此有仪式感。</p>
+          <div class="card-tags"><span>Next.js</span><span>WebSocket</span><span>K8s</span></div>
+          <a href="#" class="card-link">查看详情 →</a>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-burst" aria-hidden="true"></div>
+          <div class="card-top">
+            <span class="quest-tag quest-side">支线任务 · NEW</span>
+            <span class="card-stars">★★☆☆☆</span>
+          </div>
+          <h3>本站</h3>
+          <p>你正在看的这个页面 —— 纯手写 HTML / CSS / JS，无框架，无构建工具。</p>
+          <div class="card-tags"><span>HTML</span><span>CSS</span><span>JS</span></div>
+          <a href="#" class="card-link">查看详情 →</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="log" class="section-band">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 class="section-title">冒险日志 <span class="en">ADVENTURE LOG</span></h2>
+        <a href="#" class="view-all">查看全部 →</a>
+      </div>
+      <div class="log-list reveal">
+        <a href="#" class="log-row">
+          <span class="log-id">NO. 041<span>2026.06.28</span></span>
+          <span class="log-main"><h3>从零实现一个 CRDT 同步引擎</h3><p>关于冲突合并、向量时钟，以及我为什么后悔选了这个题目。</p></span>
+          <span class="log-meta"><span class="stars">★★★★☆</span>8 分钟阅读</span>
+        </a>
+        <a href="#" class="log-row">
+          <span class="log-id">NO. 040<span>2026.05.14</span></span>
+          <span class="log-main"><h3>我为什么放弃了微服务</h3><p>一次架构瘦身实录：从 14 个服务缩回到 3 个的心路历程。</p></span>
+          <span class="log-meta"><span class="stars">★★★☆☆</span>6 分钟阅读</span>
+        </a>
+        <a href="#" class="log-row">
+          <span class="log-id">NO. 039<span>2026.04.02</span></span>
+          <span class="log-main"><h3>给页面加点赛璐璐味道</h3><p>扁平色块 + 硬边描边，聊聊我怎么给技术博客画一张脸。</p></span>
+          <span class="log-meta"><span class="stars">★★☆☆☆</span>5 分钟阅读</span>
+        </a>
+        <a href="#" class="log-row">
+          <span class="log-id">NO. 038<span>2026.02.19</span></span>
+          <span class="log-main"><h3>K8s 事故复盘：一次凌晨三点的报警</h3><p>一次内存泄漏引发的连锁反应，以及我们最终加的三行监控。</p></span>
+          <span class="log-meta"><span class="stars">★★★★★</span>10 分钟阅读</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contact">
+  <div class="wrap footer-inner">
+    <h2 class="footer-title">想聊聊项目，<br>或者只是打个招呼？</h2>
+    <p class="footer-sub">LET'S TEAM UP →</p>
+    <div class="pad-row">
+      <a class="pad-btn pad-a" href="mailto:hi@chenyu.dev"><span>✉</span>MAIL</a>
+      <a class="pad-btn pad-b" href="https://github.com" target="_blank" rel="noopener"><span>⌥</span>GH</a>
+      <a class="pad-btn pad-x" href="#"><span>✕</span>X</a>
+      <a class="pad-btn pad-y" href="#"><span>≡</span>RSS</a>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 陈屿 · 本页无框架手写</span>
+      <span>また会おうね (｡･ω･｡)ﾉ♡</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const navToggle = document.getElementById('navToggle');
+  const mobileLinks = document.getElementById('mobileLinks');
+  if(navToggle){
+    navToggle.addEventListener('click', () => {
+      const open = mobileLinks.style.display === 'flex';
+      mobileLinks.style.display = open ? 'none' : 'flex';
+    });
+    mobileLinks.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('click', ()=> mobileLinks.style.display='none');
+    });
+  }
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+      }
+    });
+  }, {threshold:0.2});
+
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  document.querySelectorAll('.gauge').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
