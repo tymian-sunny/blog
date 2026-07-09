@@ -1,6 +1,6 @@
 <template>
   <div class="comic-layout">
-<div class="step-bar">
+<div class="step-bar" :class="{ 'is-idle': isIdle }">
   <el-steps direction="vertical" :active="currentStep">
     <el-step @click="scrollToSection('#top', 0)">
       <template #title><span class="step-bubble">首页</span></template>
@@ -258,8 +258,8 @@ const scrollToSection = (selector, stepIndex) => {
       clearTimeout(scrollTimeout)
       scrollTimeout = setTimeout(() => {
         isScrolling = false
-        // 🔴 滚动完全停止后，主动调用一次边缘校准，确保高亮 100% 正确
-        handleScrollFallback(true) 
+        // 🔴 滚动完全停止后，做一次强行位置校验
+        handleScrollFallback() 
         window.removeEventListener('scroll', checkScrollEnd)
       }, 100)
     }
@@ -341,33 +341,70 @@ const logs = [
 let sectionObserver = null
 let observer = null
 
-// 置顶/触底的兜底事件函数
-const handleScrollFallback = (force = false) => {
-  // 🔴 如果当前正在因为点击而平滑滚动，且没有被强制触发，直接拦截
-  if (isScrolling && !force) return
-
+// 🔴 极值楼层强行校准函数
+const handleScrollFallback = () => {
   const scrollTop = window.scrollY || document.documentElement.scrollTop
   
-  // 只要滚动条完全回到顶端（少于 10 像素误差），强制点亮第一个点
-  if (scrollTop <= 10) {
+  // 1. 如果页面已经彻底回到顶部（小于15px误差），强制高亮 0（首页）
+  if (scrollTop <= 15) {
     currentStep.value = 0
     return
   }
 
-  // 兜底：如果滑到了最底部，强制点亮最后一个点
+  // 2. 如果页面已经滑到了最底部（防止底部日志太短无法触发 Observer），强行高亮 3（日志）
   const scrollHeight = document.documentElement.scrollHeight
   const clientHeight = document.documentElement.clientHeight
-  if (scrollTop + clientHeight >= scrollHeight - 10) {
+  if (scrollTop + clientHeight >= scrollHeight - 15) {
     currentStep.value = 3
   }
 }
 
 // 🔴 保存引用以便在 onUnmounted 中正确移除
-const scrollHandler = () => handleScrollFallback(false)
+const scrollHandler = () => {
+  if (!isScrolling) handleScrollFallback()
+}
+
+// 🔴 核心重构：基于右侧区域的闲置与唤醒逻辑
+const isIdle = ref(false)
+let idleTimer = null
+let inRightZone = false // 记录鼠标是否在右侧唤醒区内
+
+// 启动收起倒计时
+const startIdleTimer = () => {
+  clearTimeout(idleTimer)
+  idleTimer = setTimeout(() => {
+    isIdle.value = true
+  }, 3000) // 3秒后进入闲置
+}
+
+// 监听鼠标位置
+const handleMousePosition = (e) => {
+  const distanceToRightEdge = window.innerWidth - e.clientX
+  const TRIGGER_WIDTH = 150 // 🔴 触发宽度：进入右侧 150px 范围内唤醒
+
+  if (distanceToRightEdge <= TRIGGER_WIDTH) {
+    if (!inRightZone) {
+      inRightZone = true
+      isIdle.value = false     // 瞬间唤醒
+      clearTimeout(idleTimer)  // 暂停计时，只要鼠标在右边就不收起
+    }
+  } else {
+    if (inRightZone) {
+      inRightZone = false
+      startIdleTimer() // 重新开始 3 秒收起倒计时
+    }
+  }
+}
 
 onMounted(() => {
-  // 挂载原生滚动监听，用来做核心兜底
+  // 🔴 挂载原生滚动，专门用来处理 Observer 无法覆盖的"最顶"和"最底"的极值死角
   window.addEventListener('scroll', scrollHandler)
+
+  // 🔴 挂载鼠标坐标监听
+  window.addEventListener('mousemove', handleMousePosition)
+
+  // 页面刚加载时，启动一次倒计时，3秒后自动收起
+  startIdleTimer()
 
   // 区域检测：当某块区域进入视口时更新步骤条
   sectionObserver = new IntersectionObserver((entries) => {
@@ -383,7 +420,8 @@ onMounted(() => {
       }
     })
   }, { 
-    rootMargin: '-70px 0px -40% 0px'
+    // 🔴 优化 rootMargin：上边扣掉导航栏70px，下边封死 50%，让判定焦点严格集中在视口上半部分
+    rootMargin: '-70px 0px -50% 0px'
   })
 
   // 绑定监听这 4个 核心 section
@@ -400,7 +438,7 @@ onMounted(() => {
         entry.target.classList.add('in')
       }
     })
-  }, { threshold: 0.1 })
+  }, { threshold: 0.2 })
 
   document.querySelectorAll('.reveal, .gauge').forEach(el => observer.observe(el))
 })
@@ -409,6 +447,8 @@ onUnmounted(() => {
   if (sectionObserver) sectionObserver.disconnect()
   if (observer) observer.disconnect()
   window.removeEventListener('scroll', scrollHandler)
+  window.removeEventListener('mousemove', handleMousePosition)
+  clearTimeout(idleTimer)
   clearTimeout(scrollTimeout)
 })
 </script>
@@ -432,6 +472,21 @@ onUnmounted(() => {
   box-shadow: 4px 4px 0 var(--ink);
   display: flex;
   justify-content: center; /* 横向居中 .el-steps 本身 */
+
+  /* 🔴 新增：给 transform 和 opacity 加上带弹性的动画 */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+}
+
+/* 🔴 新增：闲置收起状态 */
+.comic-layout .step-bar.is-idle {
+  transform: translate(calc(100% + 24px - 8px), -50%);
+  opacity: 0.35;
+}
+
+/* 🔴 新增：为了手感兜底，只要 hover 就强制展开并点亮 */
+.comic-layout .step-bar:hover {
+  transform: translateY(-50%);
+  opacity: 1;
 }
 
 /* 🔴 接管纵向排布：不再依赖 Element Plus 的 JS 内联高度，
