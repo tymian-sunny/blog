@@ -230,9 +230,16 @@ import { ref, onMounted, onUnmounted } from 'vue'
 // 当前激活的步骤索引 (0: 首页, 1: 属性, 2: 任务卡, 3: 冒险日志)
 const currentStep = ref(0)
 
+// 🔴 新增：控制是否是由点击激发的滚动锁定状态
+let isScrolling = false
+let scrollTimeout = null
+
 // 1. 点击步骤条平滑滚动到对应锚点
 const scrollToSection = (selector, stepIndex) => {
+  // 🔴 锁定 Observer 监听，防止滚动时干扰
+  isScrolling = true
   currentStep.value = stepIndex
+  
   const element = document.querySelector(selector)
   if (element) {
     const offset = 70
@@ -245,6 +252,18 @@ const scrollToSection = (selector, stepIndex) => {
       top: selector === '#top' ? 0 : offsetPosition,
       behavior: 'smooth'
     })
+    
+    // 监听滚动停止，释放锁定状态
+    const checkScrollEnd = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false
+        // 🔴 滚动完全停止后，主动调用一次边缘校准，确保高亮 100% 正确
+        handleScrollFallback(true) 
+        window.removeEventListener('scroll', checkScrollEnd)
+      }, 100)
+    }
+    window.addEventListener('scroll', checkScrollEnd)
   }
 }
 
@@ -318,15 +337,42 @@ const logs = [
   }
 ]
 
-// 2. 页面滚动时，自动高亮对应的步骤条
+// 区域检测与动效全局监听
 let sectionObserver = null
-
-// 滚动动画监听器 (Intersection Observer)
 let observer = null
 
+// 置顶/触底的兜底事件函数
+const handleScrollFallback = (force = false) => {
+  // 🔴 如果当前正在因为点击而平滑滚动，且没有被强制触发，直接拦截
+  if (isScrolling && !force) return
+
+  const scrollTop = window.scrollY || document.documentElement.scrollTop
+  
+  // 只要滚动条完全回到顶端（少于 10 像素误差），强制点亮第一个点
+  if (scrollTop <= 10) {
+    currentStep.value = 0
+    return
+  }
+
+  // 兜底：如果滑到了最底部，强制点亮最后一个点
+  const scrollHeight = document.documentElement.scrollHeight
+  const clientHeight = document.documentElement.clientHeight
+  if (scrollTop + clientHeight >= scrollHeight - 10) {
+    currentStep.value = 3
+  }
+}
+
+// 🔴 保存引用以便在 onUnmounted 中正确移除
+const scrollHandler = () => handleScrollFallback(false)
+
 onMounted(() => {
-  // 区域检测：当某块区域进入视口 40% 以上时更新步骤条
+  // 挂载原生滚动监听，用来做核心兜底
+  window.addEventListener('scroll', scrollHandler)
+
+  // 区域检测：当某块区域进入视口时更新步骤条
   sectionObserver = new IntersectionObserver((entries) => {
+    if (isScrolling) return
+
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const id = entry.target.getAttribute('id')
@@ -354,15 +400,16 @@ onMounted(() => {
         entry.target.classList.add('in')
       }
     })
-  }, { threshold: 0.2 })
+  }, { threshold: 0.1 })
 
-  // 挂载后监听带有 reveal 和 gauge 类的 DOM
   document.querySelectorAll('.reveal, .gauge').forEach(el => observer.observe(el))
 })
 
 onUnmounted(() => {
   if (sectionObserver) sectionObserver.disconnect()
   if (observer) observer.disconnect()
+  window.removeEventListener('scroll', scrollHandler)
+  clearTimeout(scrollTimeout)
 })
 </script>
 
