@@ -1,13 +1,21 @@
 <template>
   <div class="comic-layout">
-    <div class="step-bar">
-      <el-steps direction="vertical" :active="currentStep">
-        <el-step @click="scrollToSection('#top', 0)"/>
-        <el-step @click="scrollToSection('#status', 1)"/>
-        <el-step @click="scrollToSection('#quests', 2)"/>
-        <el-step @click="scrollToSection('#log', 3)"/>
-      </el-steps>
-    </div>
+<div class="step-bar">
+  <el-steps direction="vertical" :active="currentStep">
+    <el-step @click="scrollToSection('#top', 0)">
+      <template #title><span class="step-bubble">首页</span></template>
+    </el-step>
+    <el-step @click="scrollToSection('#status', 1)">
+      <template #title><span class="step-bubble">属性</span></template>
+    </el-step>
+    <el-step @click="scrollToSection('#quests', 2)">
+      <template #title><span class="step-bubble">任务卡</span></template>
+    </el-step>
+    <el-step @click="scrollToSection('#log', 3)">
+      <template #title><span class="step-bubble">日志</span></template>
+    </el-step>
+  </el-steps>
+</div>
     <header class="nav">
       <div class="nav-inner">
         <a href="#top" class="logo"><span class="badge">T</span>TYMIAN</a>
@@ -361,32 +369,139 @@ onUnmounted(() => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
-/* ---------- STEP BAR 修复 ---------- */
 .comic-layout .step-bar {
   position: fixed;
-  right: 30px;       /* 距离右侧留出空间 */
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
-  height: 350px;     /* 🔴 核心：垂直步骤条必须有固定高度，否则高度为0完全隐藏 */
-  z-index: 9999;     /* 🔴 核心：确保在 VuePress 各种容器和导航栏的最上层 */
-  pointer-events: all; /* 确保可以点击 */
+  height: 350px;
+  z-index: 9999;
+  pointer-events: all;
+
+  background: var(--white);
+  border: var(--line) solid var(--ink);
+  border-radius: 999px;
+  padding: 24px 13px;
+  box-shadow: 4px 4px 0 var(--ink);
+  display: flex;
+  justify-content: center; /* 横向居中 .el-steps 本身 */
 }
 
-/* 🔴 强力穿透：防止 Element Plus 样式被 VuePress 默认主题或者通配符隐式覆盖 */
-/* .comic-layout :deep(.el-step__title) {
-  font-family: var(--font-display) !important;
-  color: var(--ink) !important;
-  font-weight: 700 !important;
+/* 🔴 接管纵向排布：不再依赖 Element Plus 的 JS 内联高度，
+   改用 flex column + space-between 让 4 个节点在药丸里自动等距分布 */
+.comic-layout .step-bar :deep(.el-steps) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  background: transparent;
 }
 
-.comic-layout :deep(.el-step__icon) {
+/* 🔴 强制每个 step 的盒子高度 = 图标高度，覆盖 Element Plus 写入的内联 height */
+.comic-layout .step-bar :deep(.el-step) {
+  position: relative;
+  height: 32px !important;
+  flex: none !important;
+  display: flex;
+  align-items: center;
+  padding-bottom: 0 !important;
+}
+
+.comic-layout .step-bar :deep(.el-step__line) { display: none !important; }
+
+.comic-layout .step-bar :deep(.el-step__head) {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* main/title 不占布局宽度，只作为 .step-bubble 的挂载点 */
+.comic-layout .step-bar :deep(.el-step__main) {
+  width: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+.comic-layout .step-bar :deep(.el-step__title) {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 0 !important;
+}
+.comic-layout .step-bar :deep(.el-step__description) { display: none; }
+
+/* 圆点样式 */
+.comic-layout .step-bar :deep(.el-step__icon) {
+  width: 32px; height: 32px; border-radius: 50%;
   background: var(--white) !important;
-  border: 2px solid var(--ink) !important;
+  border: 2.5px solid var(--ink) !important;
+  color: var(--ink) !important;
+  font-family: var(--font-en) !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.comic-layout .step-bar :deep(.el-step__head:hover .el-step__icon) {
+  transform: translate(-2px, -2px) scale(1.06);
+  box-shadow: 4px 4px 0 var(--ink);
 }
 
-.comic-layout :deep(.el-step__line) {
-  background-color: var(--ink) !important; 
-} */
+.comic-layout .step-bar :deep(.el-step:nth-child(1) .el-step__head.is-finish .el-step__icon),
+.comic-layout .step-bar :deep(.el-step:nth-child(1) .el-step__head.is-process .el-step__icon) { background: var(--pink) !important; color: var(--white) !important; }
+.comic-layout .step-bar :deep(.el-step:nth-child(2) .el-step__head.is-finish .el-step__icon),
+.comic-layout .step-bar :deep(.el-step:nth-child(2) .el-step__head.is-process .el-step__icon) { background: var(--blue) !important; color: var(--white) !important; }
+.comic-layout .step-bar :deep(.el-step:nth-child(3) .el-step__head.is-finish .el-step__icon),
+.comic-layout .step-bar :deep(.el-step:nth-child(3) .el-step__head.is-process .el-step__icon) { background: var(--green) !important; color: var(--ink) !important; }
+.comic-layout .step-bar :deep(.el-step:nth-child(4) .el-step__head.is-finish .el-step__icon),
+.comic-layout .step-bar :deep(.el-step:nth-child(4) .el-step__head.is-process .el-step__icon) { background: var(--yellow) !important; color: var(--ink) !important; }
+
+/* 🔴 气泡：相对 .el-step（现在精确等于 32px）定位，top:50% 与图标中心天然对齐 */
+.comic-layout .step-bar .step-bubble {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%) scale(.85);
+  transform-origin: right center;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 13px;      /* 略微调大，和圆点视觉重量匹配 */
+  line-height: 1.4 !important; /* 🔴 覆盖从 .el-step__title 继承来的 line-height:0 */
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  z-index: 10000;
+}
+.comic-layout .step-bar .step-bubble::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: var(--ink);
+}
+
+.comic-layout .step-bar :deep(.el-step:hover .step-bubble) {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+.comic-layout .step-bar :deep(.el-step:has(.el-step__head.is-process) .step-bubble) {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+@media (max-width: 860px) {
+  .comic-layout .step-bar { display: none; }
+}
 
 .comic-layout {
   --bg: #EAF4FF;
