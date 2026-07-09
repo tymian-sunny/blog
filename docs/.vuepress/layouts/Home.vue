@@ -1,17 +1,25 @@
 <template>
   <div class="comic-layout">
+    <div class="step-bar">
+      <el-steps direction="vertical" :active="currentStep">
+        <el-step @click="scrollToSection('#top', 0)"/>
+        <el-step @click="scrollToSection('#status', 1)"/>
+        <el-step @click="scrollToSection('#quests', 2)"/>
+        <el-step @click="scrollToSection('#log', 3)"/>
+      </el-steps>
+    </div>
     <header class="nav">
       <div class="nav-inner">
         <a href="#top" class="logo"><span class="badge">T</span>TYMIAN</a>
         <nav class="links">
           <a href="#top">首页</a>
-          <a href="#status">属性</a>
-          <a href="#quests">任务卡</a>
-          <a href="#log">冒险日志</a>
-          <a href="#contact">联系</a>
+          <a href="/article/">文章</a>
+          <a href="/category/">类别</a>
+          <a href="/tag/">TAG</a>
+          <a href="/timeline/">时间线</a>
         </nav>
         <div style="display:flex;align-items:center;gap:12px;">
-          <a class="btn-ghub" href="https://github.com" target="_blank" rel="noopener">GITHUB ↗</a>
+          <a class="btn-ghub" href="https://github.com/tymian-sunny" target="_blank" rel="noopener">GITHUB ↗</a>
           <button class="nav-toggle" @click="toggleMenu" aria-label="打开菜单">
             <span></span><span></span><span></span>
           </button>
@@ -19,10 +27,10 @@
       </div>
       <div class="mobile-links" v-show="isMenuOpen" @click="isMenuOpen = false">
         <a href="#top">首页</a>
-        <a href="#status">属性</a>
-        <a href="#quests">任务卡</a>
-        <a href="#log">冒险日志</a>
-        <a href="#contact">联系</a>
+        <a href="/article/">文章</a>
+        <a href="/category/">类别</a>
+        <a href="/tag/">TAG</a>
+        <a href="/timeline/">时间线</a>
       </div>
     </header>
 
@@ -211,6 +219,27 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+// 当前激活的步骤索引 (0: 首页, 1: 属性, 2: 任务卡, 3: 冒险日志)
+const currentStep = ref(0)
+
+// 1. 点击步骤条平滑滚动到对应锚点
+const scrollToSection = (selector, stepIndex) => {
+  currentStep.value = stepIndex
+  const element = document.querySelector(selector)
+  if (element) {
+    const offset = 70
+    const bodyRect = document.body.getBoundingClientRect().top
+    const elementRect = element.getBoundingClientRect().top
+    const elementPosition = elementRect - bodyRect
+    const offsetPosition = elementPosition - offset
+
+    window.scrollTo({
+      top: selector === '#top' ? 0 : offsetPosition,
+      behavior: 'smooth'
+    })
+  }
+}
+
 // 移动端菜单状态
 const isMenuOpen = ref(false)
 const toggleMenu = () => {
@@ -281,10 +310,36 @@ const logs = [
   }
 ]
 
+// 2. 页面滚动时，自动高亮对应的步骤条
+let sectionObserver = null
+
 // 滚动动画监听器 (Intersection Observer)
 let observer = null
 
 onMounted(() => {
+  // 区域检测：当某块区域进入视口 40% 以上时更新步骤条
+  sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id')
+        if (id === 'top') currentStep.value = 0
+        else if (id === 'status') currentStep.value = 1
+        else if (id === 'quests') currentStep.value = 2
+        else if (id === 'log') currentStep.value = 3
+      }
+    })
+  }, { 
+    rootMargin: '-70px 0px -40% 0px'
+  })
+
+  // 绑定监听这 4个 核心 section
+  const sections = ['#top', '#status', '#quests', '#log']
+  sections.forEach(selector => {
+    const el = document.querySelector(selector)
+    if (el) sectionObserver.observe(el)
+  })
+
+  // 滚动动画监听器
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -298,12 +353,40 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (sectionObserver) sectionObserver.disconnect()
   if (observer) observer.disconnect()
 })
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+
+/* ---------- STEP BAR 修复 ---------- */
+.comic-layout .step-bar {
+  position: fixed;
+  right: 30px;       /* 距离右侧留出空间 */
+  top: 50%;
+  transform: translateY(-50%);
+  height: 350px;     /* 🔴 核心：垂直步骤条必须有固定高度，否则高度为0完全隐藏 */
+  z-index: 9999;     /* 🔴 核心：确保在 VuePress 各种容器和导航栏的最上层 */
+  pointer-events: all; /* 确保可以点击 */
+}
+
+/* 🔴 强力穿透：防止 Element Plus 样式被 VuePress 默认主题或者通配符隐式覆盖 */
+/* .comic-layout :deep(.el-step__title) {
+  font-family: var(--font-display) !important;
+  color: var(--ink) !important;
+  font-weight: 700 !important;
+}
+
+.comic-layout :deep(.el-step__icon) {
+  background: var(--white) !important;
+  border: 2px solid var(--ink) !important;
+}
+
+.comic-layout :deep(.el-step__line) {
+  background-color: var(--ink) !important; 
+} */
 
 .comic-layout {
   --bg: #EAF4FF;
